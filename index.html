@@ -35,12 +35,20 @@
   .sheet::after{
     content:""; position:absolute; inset:0; background:var(--color-overlay);
   }
-  .content{ position:relative; padding: clamp(16px,3.2vw,var(--pad)) clamp(18px,4.4vw,calc(var(--pad) + 8px)); }
-  header{ display:flex; justify-content:flex-end; margin-bottom:14px; font-size:14px; color:#6b7280; }
-  #dateLabel{ opacity:.85 }
+  .content{
+    position:relative; 
+    display:flex;
+    flex-direction:column;
+    justify-content:center; /* 縦方向中央 */
+    align-items:center;     /* 横方向中央 */
+    height:100%;            /* 高さ全体で中央寄せ */
+    padding: clamp(16px, 3.2vw, var(--pad));
+    text-align:center;
+  }
+  #dateLabel{ margin-bottom:20px; font-size:14px; color:#6b7280; }
   .letter{
     white-space:pre-wrap;
-    font-size: clamp(17px,2.3vw,21px);
+    font-size: clamp(18px,2.5vw,22px);
     line-height: 1.95;
     color: var(--color-ink);
     text-shadow:0 1px 0 rgba(255,255,255,0.75),0 0 1px rgba(0,0,0,0.08);
@@ -50,12 +58,8 @@
 <body>
   <main class="sheet" role="article" aria-label="善三の手紙">
     <div class="content">
-      <header>
-        <!-- 日付だけ残す -->
-        <div id="dateLabel">—</div>
-      </header>
+      <div id="dateLabel">—</div>
       <section id="letter" class="letter">読み込み中…</section>
-      <!-- footerごと削除でOK -->
     </div>
   </main>
 
@@ -83,7 +87,6 @@ async function loadLetters(){
   try{
     data=await loadLetters();
   }catch(e){
-    console.warn(e);
     data={letters:[{text:"（データがありません）"}]};
   }
   const letters=data.letters||[];
