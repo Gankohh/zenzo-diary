@@ -3,7 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>善三の手紙｜日めくり</title>
+<title>善三の日記</title>
+
+<!-- Google Fonts 手書き風 -->
+<link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
+
 <style>
   :root{
     --color-ink:#111;
@@ -17,7 +21,7 @@
   html,body{height:100%}
   body{
     margin:0; background:#e7e6e2; color:var(--color-ink);
-    font:16px/1.85 ui-serif,"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+    font:16px/1.9 'Sawarabi Mincho', serif; /* ←ここで適用 */
     display:flex; align-items:center; justify-content:center; padding:16px;
   }
   .sheet{
@@ -36,16 +40,15 @@
     content:""; position:absolute; inset:0; background:var(--color-overlay);
   }
 
-  /* 右上の日付（フロー外にして本文のセンタリングに影響させない） */
+  /* 日付は右上固定 */
   #dateLabel{
     position:absolute; top:10px; right:14px;
     font-size:14px; color:#6b7280; opacity:.9;
-    pointer-events:none;
+    font-family: 'Sawarabi Mincho', serif;
   }
 
   .content{
     position:relative;
-    /* 本文のみをド真ん中に */
     display:flex; align-items:center; justify-content:center;
     min-height:70vh;
     padding: clamp(16px,3.2vw,var(--pad));
@@ -53,17 +56,18 @@
   }
   .letter{
     white-space:pre-wrap;
+    font-family: 'Sawarabi Mincho', serif; /* 本文も指定 */
     font-size: clamp(18px,2.5vw,22px);
-    line-height: 1.95;
+    line-height: 2.0;
     color: var(--color-ink);
     text-shadow:0 1px 0 rgba(255,255,255,0.75),0 0 1px rgba(0,0,0,0.08);
-    max-width: 42ch;              /* 行の読みやすい長さに制限 */
+    max-width: 42ch;
     margin: 0 auto;
   }
 </style>
 </head>
 <body>
-  <main class="sheet" role="article" aria-label="善三の手紙">
+  <main class="sheet" role="article" aria-label="善三の日記">
     <div id="dateLabel">—</div>
     <div class="content">
       <section id="letter" class="letter">読み込み中…</section>
