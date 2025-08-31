@@ -5,20 +5,62 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>善三の手紙｜日めくり</title>
 <style>
-  :root{--color-ink:#222;--color-overlay:rgba(255,255,255,.92);--radius:18px;--pad:22px;--paper-url:url('paper.jpg');--maxw:780px}
-  *{box-sizing:border-box} html,body{height:100%}
-  body{margin:0;background:#ecebe7;color:var(--color-ink);font:16px/1.8 ui-serif,"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;display:flex;align-items:center;justify-content:center;padding:16px}
-  .sheet{position:relative;width:100%;max-width:var(--maxw);min-height:70vh;border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.15);overflow:hidden;background:#fff}
-  .sheet::before{content:"";position:absolute;inset:0;background-image:var(--paper-url);background-size:cover;background-position:center}
-  .sheet::after{content:"";position:absolute;inset:0;background:var(--color-overlay)}
-  .content{position:relative;padding:clamp(14px,3vw,var(--pad))}
-  header{display:flex;justify-content:space-between;margin-bottom:12px;font-size:14px;opacity:.8}
-  .letter{white-space:pre-wrap;font-size:clamp(16px,2.2vw,20px);line-height:1.9}
-  footer{margin-top:18px;font-size:13px;opacity:.7}
+  :root{
+    --color-ink:#111;                       /* 文字色をより濃く */
+    --color-muted:#6b7280;
+    --color-overlay: rgba(255,255,255,.28); /* ← ここを薄くして読みやすさUP */
+    --radius:18px;
+    --pad:22px;
+    --paper-url: url('paper.jpg');          /* 背景紙 */
+    --maxw: 780px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:#e7e6e2; color:var(--color-ink);
+    font:16px/1.85 ui-serif,"Hiragino Mincho ProN","Yu Mincho",Georgia,serif;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .sheet{
+    position:relative; width:100%; max-width:var(--maxw); min-height:70vh;
+    border-radius:var(--radius);
+    box-shadow:0 18px 40px rgba(0,0,0,.18);
+    overflow:hidden; background:#fff;
+  }
+  .sheet::before{
+    content:""; position:absolute; inset:0;
+    background-image: var(--paper-url);
+    background-size:cover; background-position:center;
+    filter:contrast(1.02) saturate(1.02) brightness(1.02);
+  }
+  .sheet::after{
+    /* 紙の上に薄いオーバーレイ（※薄めに調整済み） */
+    content:""; position:absolute; inset:0; background:var(--color-overlay);
+  }
+  .content{
+    position:relative; /* 擬似要素の上に乗せる */
+    padding: clamp(16px, 3.2vw, var(--pad)) clamp(18px, 4.4vw, calc(var(--pad) + 8px));
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px; font-size:14px; color:var(--color-muted);
+  }
+  #dateLabel{ opacity:.85 }
+  .letter{
+    white-space:pre-wrap;
+    font-size: clamp(17px, 2.3vw, 21px);
+    line-height: 1.95;
+    color: var(--color-ink);
+    /* 文字が背景に埋もれないように、ほんのり縁取り */
+    text-shadow:
+      0 1px 0 rgba(255,255,255,0.75),
+      0 0 1px rgba(0,0,0,0.08);
+  }
+  footer{ margin-top:18px; font-size:13px; color:var(--color-muted) }
 </style>
 </head>
 <body>
-  <main class="sheet">
+  <main class="sheet" role="article" aria-label="善三の手紙">
     <div class="content">
       <header>
         <div>山口善三の手紙</div>
@@ -30,19 +72,59 @@
   </main>
 
 <script>
-function getJstDate(d=new Date()){const s=d.toLocaleString('en-US',{timeZone:'Asia/Tokyo'});return new Date(s)}
-function ymd(date){const y=date.getFullYear(),m=String(date.getMonth()+1).padStart(2,'0'),d=String(date.getDate()).padStart(2,'0');return `${y}-${m}-${d}`}
-function dayOfYear(date){const start=new Date(date.getFullYear(),0,1);return Math.floor((date-start)/86400000)+1}
-async function loadLetters(){const r=await fetch('letters.json?v='+Date.now(),{cache:'no-store'});return r.json()}
+/* ====== 日付まわり（JST） ====== */
+function getJstDate(d=new Date()){
+  const s = d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
+  return new Date(s);
+}
+function ymd(date){
+  const y=date.getFullYear(), m=String(date.getMonth()+1).padStart(2,'0'), d=String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+function dayOfYear(date){
+  const start=new Date(date.getFullYear(),0,1);
+  return Math.floor((date-start)/86400000)+1;
+}
+
+/* ====== データ読み込み ====== */
+async function loadLetters(){
+  const r = await fetch('letters.json?v=' + Date.now(), { cache:'no-store' });
+  if(!r.ok) throw new Error('letters.json load failed');
+  return r.json();
+}
+
+/* ====== メイン ====== */
 (async function init(){
-  const now=getJstDate(); const today=ymd(now); const day=dayOfYear(now);
-  document.getElementById('dateLabel').textContent=today;
-  let data; try{ data=await loadLetters(); }catch{ data={letters:[{text:"データがありません"}]}; }
-  const letters=data.letters||[];
-  let chosen; const byDate=new Map(); letters.forEach(it=>{ if(it.date) byDate.set(it.date,it); });
-  chosen=byDate.get(today);
-  if(!chosen){ const pool=letters.filter(it=>!it.date); const idx=(day-1)%Math.max(1,pool.length); chosen=pool[idx]||{text:"データがありません"}; }
-  document.getElementById('letter').textContent=chosen.text||""; document.getElementById('meta').textContent=`#day ${day}`;
+  const now = getJstDate();
+  const todayStr = ymd(now);
+  const day = dayOfYear(now);
+  document.getElementById('dateLabel').textContent = todayStr;
+
+  let data;
+  try{
+    data = await loadLetters(); // { letters: [ {text, date?}, ... ] }
+  }catch(e){
+    console.warn(e);
+    data = { letters: [{ text: "（データがありません）letters.json を追加してください。" }] };
+  }
+  const letters = Array.isArray(data.letters) ? data.letters : [];
+
+  // date 指定があれば最優先
+  const byDate = new Map();
+  for(const it of letters){ if(it.date) byDate.set(it.date, it); }
+  let chosen = byDate.get(todayStr);
+
+  if(!chosen){
+    const pool = letters.filter(it => !it.date);
+    if (pool.length === 0){
+      chosen = { text: "（本文なし）" };
+    } else {
+      const idx = (day - 1) % pool.length;
+      chosen = pool[idx];
+    }
+  }
+  document.getElementById('letter').textContent = chosen.text || "";
+  document.getElementById('meta').textContent = `#day ${day}`;
 })();
 </script>
 </body>
