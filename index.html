@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>善三の日記</title>
+<title>善三の手紙｜日めくり</title>
 <style>
   :root{
     --color-ink:#111;
@@ -35,30 +35,37 @@
   .sheet::after{
     content:""; position:absolute; inset:0; background:var(--color-overlay);
   }
+
+  /* 右上の日付（フロー外にして本文のセンタリングに影響させない） */
+  #dateLabel{
+    position:absolute; top:10px; right:14px;
+    font-size:14px; color:#6b7280; opacity:.9;
+    pointer-events:none;
+  }
+
   .content{
-    position:relative; 
-    display:flex;
-    flex-direction:column;
-    justify-content:center; /* 縦方向中央 */
-    align-items:center;     /* 横方向中央 */
-    height:100%;            /* 高さ全体で中央寄せ */
-    padding: clamp(16px, 3.2vw, var(--pad));
+    position:relative;
+    /* 本文のみをド真ん中に */
+    display:flex; align-items:center; justify-content:center;
+    min-height:70vh;
+    padding: clamp(16px,3.2vw,var(--pad));
     text-align:center;
   }
-  #dateLabel{ margin-bottom:20px; font-size:14px; color:#6b7280; }
   .letter{
     white-space:pre-wrap;
     font-size: clamp(18px,2.5vw,22px);
     line-height: 1.95;
     color: var(--color-ink);
     text-shadow:0 1px 0 rgba(255,255,255,0.75),0 0 1px rgba(0,0,0,0.08);
+    max-width: 42ch;              /* 行の読みやすい長さに制限 */
+    margin: 0 auto;
   }
 </style>
 </head>
 <body>
   <main class="sheet" role="article" aria-label="善三の手紙">
+    <div id="dateLabel">—</div>
     <div class="content">
-      <div id="dateLabel">—</div>
       <section id="letter" class="letter">読み込み中…</section>
     </div>
   </main>
@@ -80,20 +87,17 @@ async function loadLetters(){
 
 (async function init(){
   const now=getJstDate();
-  const todayStr=ymd(now);
-  document.getElementById('dateLabel').textContent=todayStr;
+  document.getElementById('dateLabel').textContent = ymd(now);
 
   let data;
-  try{
-    data=await loadLetters();
-  }catch(e){
-    data={letters:[{text:"（データがありません）"}]};
-  }
+  try{ data=await loadLetters(); }
+  catch{ data={letters:[{text:"（データがありません）"}]}; }
+
   const letters=data.letters||[];
   const pool=letters.filter(it=>!it.date);
   const idx=(now.getDate()-1)%Math.max(1,pool.length);
   const chosen=pool[idx]||{text:"（本文なし）"};
-  document.getElementById('letter').textContent=chosen.text||"";
+  document.getElementById('letter').textContent = chosen.text || "";
 })();
 </script>
 </body>
